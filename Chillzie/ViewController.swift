@@ -16,6 +16,9 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var timeLabel: UILabel!
     
+    @IBOutlet weak var progressView: ProgressView!
+    
+    var startDate: NSDate? = nil
     var targetDate: NSDate? = nil
     var timer = Timer()
     var timerStarted = false
@@ -49,7 +52,8 @@ class ViewController: UIViewController {
         
         let seconds = secondsValue + 60 * minutesValue
         
-        targetDate = NSDate.init(timeIntervalSinceNow: TimeInterval(seconds))
+        startDate = NSDate.init()
+        targetDate = startDate!.addingTimeInterval(TimeInterval(seconds))
     }
     
     func runTimer() {
@@ -58,7 +62,14 @@ class ViewController: UIViewController {
     
     @objc func updateTimer() {
         let seconds = targetDate!.timeIntervalSinceNow
-        timeLabel.text = timeString(time: seconds)
+        let timeStr = timeString(time: seconds)
+        timeLabel.text = timeStr
+        
+        // testing progress view
+        let total = targetDate!.timeIntervalSince(startDate! as Date)
+        let from = (seconds + 1) / total
+        let to = seconds / total
+        progressView.animateProgressView(from: from, to: to, text: timeStr)
         
         if seconds <= 0 {
             timer.invalidate()
