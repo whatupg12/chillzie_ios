@@ -22,6 +22,7 @@
 		F5F32B0821FC9A0C001466E3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F5F32B0B21FC9A0C001466E3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F5F32B0D21FC9A0C001466E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F5F32B1321FC9B53001466E3 /* Chillzie.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Chillzie.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +55,7 @@
 		F5F32B0021FC9A0A001466E3 /* Chillzie */ = {
 			isa = PBXGroup;
 			children = (
+				F5F32B1321FC9B53001466E3 /* Chillzie.entitlements */,
 				F5F32B0121FC9A0A001466E3 /* AppDelegate.swift */,
 				F5F32B0321FC9A0B001466E3 /* ViewController.swift */,
 				F5F32B0521FC9A0B001466E3 /* Main.storyboard */,
@@ -96,6 +98,11 @@
 				TargetAttributes = {
 					F5F32AFD21FC9A0A001466E3 = {
 						CreatedOnToolsVersion = 10.1;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -282,9 +289,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Chillzie/Chillzie.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4KH6W29738;
 				INFOPLIST_FILE = Chillzie/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -300,9 +309,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Chillzie/Chillzie.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4KH6W29738;
 				INFOPLIST_FILE = Chillzie/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
