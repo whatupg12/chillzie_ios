@@ -78,6 +78,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="chillButton" destination="Gln-3q-WIP" id="IgU-tf-sc2"/>
                         <outlet property="minutesTextField" destination="pRg-y8-fe6" id="YoJ-vi-zQi"/>
                         <outlet property="progressView" destination="UvN-3b-NaQ" id="iut-hu-Yy1"/>
                         <outlet property="secondsTextField" destination="RdS-F8-cee" id="atN-MQ-uKB"/>

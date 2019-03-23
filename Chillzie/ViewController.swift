@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ViewController: UIViewController {
 
@@ -14,14 +15,20 @@ class ViewController: UIViewController {
     @IBOutlet weak var minutesTextField: UITextField!
     @IBOutlet weak var secondsTextField: UITextField!
     
+    @IBOutlet weak var chillButton: UIButton!
+    
     @IBOutlet weak var timeLabel: UILabel!
     
     @IBOutlet weak var progressView: ProgressView!
     
     var startDate: NSDate? = nil
     var targetDate: NSDate? = nil
+    
     var timer = Timer()
+    var noiseTimer = Timer()
+    
     var timerStarted = false
+    var alarmPlaying = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,13 +36,20 @@ class ViewController: UIViewController {
     }
 
     @IBAction func chillzieButtonTouched(_ sender: Any) {
-        if timerStarted {
+        if timerStarted || alarmPlaying {
             timer.invalidate();
+            
             timerStarted = false
+            alarmPlaying = false
+            
+            chillButton.setTitle("Chill!", for: .normal)
         } else {
             calculateTargetDate()
             runTimer()
             timerStarted = true
+            alarmPlaying = false
+            
+            chillButton.setTitle("Stop!", for: .normal)
         }
     }
     
@@ -58,22 +72,53 @@ class ViewController: UIViewController {
     
     func runTimer() {
         timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: (#selector(ViewController.updateTimer)), userInfo: nil, repeats: true)
+        
+        updateTimer() // run for the first time
     }
     
     @objc func updateTimer() {
+        let seconds = updateProgressTimer()
+        
+        if seconds <= 0 {
+            timer.invalidate()
+            
+            timerStarted = false
+            alarmPlaying = true
+            
+            playAlarmNoise()
+            runNoiseTimer()
+        }
+    }
+    
+    func updateProgressTimer() -> Double {
         let seconds = targetDate!.timeIntervalSinceNow
         let timeStr = timeString(time: seconds)
         timeLabel.text = timeStr
         
-        // testing progress view
         let total = targetDate!.timeIntervalSince(startDate! as Date)
         let from = (seconds + 1) / total
         let to = seconds / total
         progressView.animateProgressView(from: from, to: to, text: timeStr)
         
-        if seconds <= 0 {
-            timer.invalidate()
+        return seconds
+    }
+    
+    func runNoiseTimer() {
+        noiseTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: (#selector(ViewController.updateNoiseTimer)), userInfo: nil, repeats: true)
+        
+        updateNoiseTimer() // run for the first time
+    }
+    
+    @objc func updateNoiseTimer() {
+        if alarmPlaying {
+            playAlarmNoise()
+        } else {
+            noiseTimer.invalidate()
         }
+    }
+    
+    func playAlarmNoise() {
+        AudioServicesPlayAlertSound(1005)  // Calendar Alarm
     }
     
     func timeString(time:TimeInterval) -> String {
