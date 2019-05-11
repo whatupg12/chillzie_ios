@@ -31,7 +31,7 @@ class ProgressView: UIView, CAAnimationDelegate {
         progressLabel = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: frame.width, height: 60.0))
         progressLabel.textColor = .black
         progressLabel.textAlignment = .center
-        progressLabel.text = "Load content"
+        progressLabel.text = "Coolzie"
         progressLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 40.0)
         progressLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(progressLabel)

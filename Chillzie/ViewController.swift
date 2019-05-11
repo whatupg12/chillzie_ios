@@ -9,11 +9,12 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITextFieldDelegate {
 
     //MARK: Properties
-    @IBOutlet weak var minutesTextField: UITextField!
-    @IBOutlet weak var secondsTextField: UITextField!
+    @IBOutlet weak var beverageTextField: UITextField!
+    @IBOutlet weak var roomTempTextField: UITextField!
+    @IBOutlet weak var idealTempTextField: UITextField!
     
     @IBOutlet weak var chillButton: UIButton!
     
@@ -33,8 +34,70 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        updateChillTimeLabel()
     }
 
+    @IBAction func beverageButtonTouched() {
+        let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc = storyBoard.instantiateViewController(withIdentifier: "beverageTableViewController") as! BeverageTableViewController
+        
+        vc.completionHandler =  { (beverage: Beverage) in
+            self.beverageTextField.text = beverage.name
+            self.idealTempTextField.text = String(beverage.temp)
+            
+            self.updateChillTimeLabel()
+        }
+        
+        self.present(vc, animated: true, completion: nil)
+    }
+    
+    @IBAction func tempLabelsChanged(_ sender: Any) {
+        updateChillTimeLabel()
+    }
+    
+    func updateChillTimeLabel() {
+        let chillTimeSeconds = getChillTime()
+        
+        if chillTimeSeconds > 0 {
+            let seconds = chillTimeSeconds % 60
+            let minutes = chillTimeSeconds / 60
+            
+            var msg = ""
+            if minutes > 0 {
+                msg = "\(minutes) mins "
+            }
+            if seconds > 0 {
+                msg = "\(msg)\(seconds) secs"
+            }
+            
+            print("Setting chill time to '\(msg)'")
+            timeLabel.text = "Time: \(msg)"
+            
+        } else {
+            timeLabel.text = "Enter temps."
+        }
+    }
+    
+    // seconds duration or -1 for invalid
+    func getChillTime() -> Int {
+        let startTemp = Double(roomTempTextField.text ?? "70") ?? 70
+        let targetTemp = Double(idealTempTextField.text ?? "52") ?? 52
+        
+        var chillTimeSeconds: Int = -1
+        if startTemp > targetTemp {
+            // its about 1 minute per degree
+            chillTimeSeconds = Int(ceil((startTemp - targetTemp) * 60))
+            
+            // extra minute for target temperatures greater than 60 degrees
+            if (targetTemp > 60) {
+                chillTimeSeconds += 60
+            }
+            
+        }
+        return chillTimeSeconds
+    }
+    
     @IBAction func chillzieButtonTouched(_ sender: Any) {
         if timerStarted || alarmPlaying {
             timer.invalidate();
@@ -53,18 +116,15 @@ class ViewController: UIViewController {
         }
     }
     
-    func requestAlarm() {
-        let url = URL(string: "https://example.com/post")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    }
+//    func requestAlarm() {
+//        let url = URL(string: "https://example.com/post")!
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "POST"
+//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//    }
     
     func calculateTargetDate() {
-        let minutesValue = Int(minutesTextField.text ?? "0") ?? 0
-        let secondsValue = Int(secondsTextField.text ?? "0") ?? 0
-        
-        let seconds = secondsValue + 60 * minutesValue
+        let seconds = getChillTime()
         
         startDate = NSDate.init()
         targetDate = startDate!.addingTimeInterval(TimeInterval(seconds))
@@ -93,7 +153,6 @@ class ViewController: UIViewController {
     func updateProgressTimer() -> Double {
         let seconds = targetDate!.timeIntervalSinceNow
         let timeStr = timeString(time: seconds)
-        timeLabel.text = timeStr
         
         let total = targetDate!.timeIntervalSince(startDate! as Date)
         let from = (seconds + 1) / total
