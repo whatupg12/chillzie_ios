@@ -39,6 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             guard settings.authorizationStatus == .authorized else { return }
             DispatchQueue.main.async {
+                print("Registering for Remote Notifications")
                 UIApplication.shared.registerForRemoteNotifications()
             }
 
@@ -52,12 +53,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
         print("Device Token: \(token)")
+        
+        //save the token in NSUserDefaults
+        UserDefaults.standard.set(token, forKey: "deviceToken")
     }
     
     func application(
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
+    }
+    
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // reset badge count
+        application.applicationIconBadgeNumber = 0
     }
 
 }

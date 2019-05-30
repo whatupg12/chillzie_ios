@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 
 class ViewController: UIViewController, UITextFieldDelegate {
-
+    
     //MARK: Properties
     @IBOutlet weak var beverageTextField: UITextField!
     @IBOutlet weak var roomTempTextField: UITextField!
@@ -36,6 +36,67 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Do any additional setup after loading the view, typically from a nib.
         
         updateChillTimeLabel()
+    }
+    
+    @IBAction func testService() {
+        // get a date
+        let alarm = (NSDate.init() as Date) + TimeInterval(60)
+        setPushNotificationAlarm(alarm: alarm, beverage: "TEST")
+    }
+    
+    func setPushNotificationAlarm(alarm: Date, beverage: String) {
+        
+        // format date
+        let formatter = DateFormatter()
+        // initially set the format based on your datepicker date / server String
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss xxxx"
+        let alarmStr = formatter.string(from: alarm as Date)
+        
+        print("Date")
+        print(alarmStr)
+        
+        //get the token in NSUserDefaults
+        guard let storedToken = UserDefaults.standard.string(forKey: "deviceToken") else {
+            print("No stored token; no push request sent")
+            return
+        }
+        print("StoredToken")
+        print(storedToken)
+        
+        
+        // setup our request
+        let url = URL(string: "https://rest.coolzie.com/alarm")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let parameters: [String: Any] = [
+            "token_hex": storedToken,
+            "alarm": alarmStr,
+            "beverage": beverage
+        ]
+        request.httpBody = parameters.percentEscaped().data(using: .utf8)
+        
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print(error)
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                (200...299).contains(httpResponse.statusCode) else {
+                    print(response.debugDescription)
+                    return
+            }
+            
+            if let mimeType = httpResponse.mimeType, mimeType == "text/html",
+                let data = data,
+                let string = String(data: data, encoding: .utf8) {
+                    print("!!!!!!!respons")
+                    print(string)
+            }
+        }
+        task.resume()
     }
 
     @IBAction func beverageButtonTouched() {
@@ -109,19 +170,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
         } else {
             calculateTargetDate()
             runTimer()
+            setPushNotificationAlarm(alarm: targetDate! as Date, beverage: self.beverageTextField.text ?? "Beverage")
+            
             timerStarted = true
             alarmPlaying = false
             
             chillButton.setTitle("Stop!", for: .normal)
         }
     }
-    
-//    func requestAlarm() {
-//        let url = URL(string: "https://example.com/post")!
-//        var request = URLRequest(url: url)
-//        request.httpMethod = "POST"
-//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//    }
     
     func calculateTargetDate() {
         let seconds = getChillTime()
@@ -187,5 +243,27 @@ class ViewController: UIViewController, UITextFieldDelegate {
         return String(format:"%02i:%02i:%02i", hours, minutes, seconds)
     }
     
+}
+
+extension Dictionary {
+    func percentEscaped() -> String {
+        return map { (key, value) in
+            let escapedKey = "\(key)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
+            let escapedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
+            return escapedKey + "=" + escapedValue
+            }
+            .joined(separator: "&")
+    }
+}
+
+extension CharacterSet {
+    static let urlQueryValueAllowed: CharacterSet = {
+        let generalDelimitersToEncode = ":#[]@" // does not include "?" or "/" due to RFC 3986 - Section 3.4
+        let subDelimitersToEncode = "!$&'()*+,;="
+        
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "\(generalDelimitersToEncode)\(subDelimitersToEncode)")
+        return allowed
+    }()
 }
 
